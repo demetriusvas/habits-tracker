@@ -485,6 +485,7 @@ body {
     background-color: var(--bg-tertiary);
     border: 1px solid var(--border);
     transition: var(--transition);
+    cursor: pointer;
 }
 
 .progress-day.completed {
@@ -508,6 +509,7 @@ body {
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-md);
 }
+.week-day-container { cursor: pointer; }
 
 .week-day {
     text-align: center;
@@ -1060,4 +1062,3 @@ input[type="checkbox"] {
         font-size: var(--font-size-sm);
     }
 }
-

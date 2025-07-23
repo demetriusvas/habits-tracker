@@ -352,7 +352,9 @@ class HabitsTracker {
             const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' });
             
             return `
-                <div class="week-day-container">
+                <div class="week-day-container" 
+                     onclick="habitsTracker.toggleHabitCompletion('${habit.id}', '${dateKey}')"
+                     title="${date.toLocaleDateString('pt-BR')}: Clique para alterar.">
                     <div class="week-day">${dayName}</div>
                     <div class="week-bar">
                         <div class="week-bar-fill" style="height: ${Math.min(percentage, 100)}%"></div>
@@ -398,7 +400,9 @@ class HabitsTracker {
                 className += ' partial';
             }
 
-            return `<div class="${className}" title="${date.toLocaleDateString('pt-BR')}: ${completion}/${habit.goal}"></div>`;
+            return `<div class="${className}" 
+                         title="${date.toLocaleDateString('pt-BR')}: ${completion}/${habit.goal}. Clique para alterar."
+                         onclick="habitsTracker.toggleHabitCompletion('${habit.id}', '${dateKey}')"></div>`;
         }).join('');
 
         return `
@@ -869,4 +873,3 @@ let habitsTracker;
 document.addEventListener('DOMContentLoaded', () => {
     habitsTracker = new HabitsTracker();
 });
-
