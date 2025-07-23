@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habits Tracker - Controle de Hábitos Diários</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <i class="fas fa-check-circle"></i>
+                    Habits Tracker
+                </h1>
+                <div class="header-actions">
+                    <button class="btn-icon" id="themeToggle" title="Alternar tema">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="btn-icon" id="settingsBtn" title="Configurações">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-tab" data-tab="progress">
+                <i class="fas fa-chart-line"></i>
+                <span>Progresso</span>
+            </button>
+            <button class="nav-tab" data-tab="habits">
+                <i class="fas fa-list"></i>
+                <span>Hábitos</span>
+            </button>
+            <button class="nav-tab" data-tab="stats">
+                <i class="fas fa-chart-bar"></i>
+                <span>Estatísticas</span>
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <section class="tab-content active" id="dashboard">
+                <div class="dashboard-header">
+                    <h2>Seus Hábitos de Hoje</h2>
+                    <p class="date-display" id="currentDate"></p>
+                </div>
+                
+                <div class="habits-grid" id="todayHabits">
+                    <!-- Hábitos serão inseridos aqui via JavaScript -->
+                </div>
+
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="totalStreak">0</span>
+                            <span class="stat-label">Maior Streak</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="todayCompletion">0%</span>
+                            <span class="stat-label">Hoje</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-week"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="weekCompletion">0%</span>
+                            <span class="stat-label">Esta Semana</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary btn-add-habit" id="addHabitBtn">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Novo Hábito
+                </button>
+            </section>
+
+            <!-- Progress Tab -->
+            <section class="tab-content" id="progress">
+                <div class="progress-header">
+                    <h2>Visualização de Progresso</h2>
+                    <div class="view-toggle">
+                        <button class="btn-toggle active" data-view="week">7D</button>
+                        <button class="btn-toggle" data-view="year">Ano</button>
+                    </div>
+                </div>
+
+                <div class="progress-content">
+                    <div class="habits-progress" id="habitsProgress">
+                        <!-- Progresso dos hábitos será inserido aqui -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Habits Management Tab -->
+            <section class="tab-content" id="habits">
+                <div class="habits-header">
+                    <h2>Gerenciar Hábitos</h2>
+                    <button class="btn-primary" id="addHabitBtn2">
+                        <i class="fas fa-plus"></i>
+                        Novo Hábito
+                    </button>
+                </div>
+
+                <div class="habits-list" id="habitsList">
+                    <!-- Lista de hábitos será inserida aqui -->
+                </div>
+            </section>
+
+            <!-- Statistics Tab -->
+            <section class="tab-content" id="stats">
+                <div class="stats-header">
+                    <h2>Estatísticas Detalhadas</h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <h3>Progresso Geral</h3>
+                        <canvas id="overallChart" width="300" height="200"></canvas>
+                    </div>
+                    <div class="stats-card">
+                        <h3>Consistência Semanal</h3>
+                        <canvas id="weeklyChart" width="300" height="200"></canvas>
+                    </div>
+                    <div class="stats-card">
+                        <h3>Top Hábitos</h3>
+                        <div class="top-habits" id="topHabits">
+                            <!-- Top hábitos serão inseridos aqui -->
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <h3>Streaks Atuais</h3>
+                        <div class="current-streaks" id="currentStreaks">
+                            <!-- Streaks atuais serão inseridos aqui -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Add Habit Modal -->
+        <div class="modal" id="addHabitModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Adicionar Novo Hábito</h3>
+                    <button class="btn-close" id="closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form class="habit-form" id="habitForm">
+                    <div class="form-group">
+                        <label for="habitName">Nome do Hábito</label>
+                        <input type="text" id="habitName" required placeholder="Ex: Beber água, Exercitar-se...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="habitIcon">Ícone</label>
+                        <div class="icon-selector" id="iconSelector">
+                            <button type="button" class="icon-option active" data-icon="fas fa-water">💧</button>
+                            <button type="button" class="icon-option" data-icon="fas fa-dumbbell">🏋️</button>
+                            <button type="button" class="icon-option" data-icon="fas fa-book">📚</button>
+                            <button type="button" class="icon-option" data-icon="fas fa-apple-alt">🍎</button>
+                            <button type="button" class="icon-option" data-icon="fas fa-bed">🛏️</button>
+                            <button type="button" class="icon-option" data-icon="fas fa-running">🏃</button>
+                            <button type="button" class="icon-option" data-icon="fas fa-meditation">🧘</button>
+                            <button type="button" class="icon-option" data-icon="fas fa-music">🎵</button>
+                        </div>
+                        <input type="hidden" id="selectedIcon" value="fas fa-water">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="habitFrequency">Frequência</label>
+                        <select id="habitFrequency">
+                            <option value="daily">Diário</option>
+                            <option value="weekly">Semanal</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="habitTime">Horário (Opcional)</label>
+                        <input type="time" id="habitTime">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="habitGoal">Meta Diária</label>
+                        <div class="goal-input">
+                            <input type="number" id="habitGoal" min="1" value="1">
+                            <select id="habitUnit">
+                                <option value="times">vezes</option>
+                                <option value="minutes">minutos</option>
+                                <option value="hours">horas</option>
+                                <option value="glasses">copos</option>
+                                <option value="pages">páginas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="cancelBtn">Cancelar</button>
+                        <button type="submit" class="btn-primary">Adicionar Hábito</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Configurações</h3>
+                    <button class="btn-close" id="closeSettingsModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="settings-content">
+                    <div class="setting-item">
+                        <label>
+                            <span>Modo Escuro</span>
+                            <input type="checkbox" id="darkModeToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <span>Notificações</span>
+                            <input type="checkbox" id="notificationsToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <button class="btn-danger" id="resetDataBtn">
+                            <i class="fas fa-trash"></i>
+                            Resetar Todos os Dados
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
