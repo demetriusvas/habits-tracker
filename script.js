@@ -2,21 +2,43 @@
 
 class HabitsTracker {
     constructor() {
-        this.habits = this.loadHabits();
+        // A instância 'db' é criada no index.html e está disponível globalmente
+        if (typeof db === 'undefined') {
+            alert('Firebase não foi inicializado. Verifique seu script de configuração no index.html.');
+            return;
+        }
+        this.db = db;
+        this.habitsCollection = this.db.collection('habits');
+        this.habits = [];
         this.currentView = 'week';
         this.currentDate = new Date();
         
         this.init();
     }
 
-    init() {
+    async init() {
         this.setupEventListeners();
+        this.listenForHabitChanges(); // Inicia o listener em tempo real
         this.renderCurrentDate();
+        this.loadTheme();
+    }
+
+    renderAll() {
         this.renderDashboard();
         this.renderProgress();
         this.renderHabitsList();
         this.updateQuickStats();
         this.loadTheme();
+    }
+
+    // Listener em tempo real para atualizações do Firestore
+    listenForHabitChanges() {
+        this.habitsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            this.habits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log('Hábitos carregados/atualizados do Firestore:', this.habits);
+            // Re-renderiza tudo sempre que os dados mudam
+            this.renderAll();
+        });
     }
 
     // Event Listeners
@@ -95,20 +117,10 @@ class HabitsTracker {
         });
     }
 
-    // Data Management
-    loadHabits() {
-        const stored = localStorage.getItem('habits-tracker-data');
-        if (stored) {
-            return JSON.parse(stored);
-        }
-        return [];
-    }
+    // Data Management (agora com Firestore)
+    // Os métodos agora são 'async' para aguardar a resposta do banco de dados
 
-    saveHabits() {
-        localStorage.setItem('habits-tracker-data', JSON.stringify(this.habits));
-    }
-
-    addHabit() {
+    async addHabit() {
         const name = document.getElementById('habitName').value.trim();
         const icon = document.getElementById('selectedIcon').value;
         const frequency = document.getElementById('habitFrequency').value;
@@ -122,7 +134,7 @@ class HabitsTracker {
         }
 
         const habit = {
-            id: Date.now().toString(),
+            // O ID será gerado automaticamente pelo Firestore
             name,
             icon,
             frequency,
@@ -133,48 +145,43 @@ class HabitsTracker {
             completions: {}
         };
 
-        this.habits.push(habit);
-        this.saveHabits();
-        this.closeModal('addHabitModal');
-        this.renderDashboard();
-        this.renderProgress();
-        this.renderHabitsList();
-        this.updateQuickStats();
-        this.resetForm();
-    }
-
-    deleteHabit(habitId) {
-        if (confirm('Tem certeza que deseja excluir este hábito? Esta ação não pode ser desfeita.')) {
-            this.habits = this.habits.filter(habit => habit.id !== habitId);
-            this.saveHabits();
-            this.renderDashboard();
-            this.renderProgress();
-            this.renderHabitsList();
-            this.updateQuickStats();
+        try {
+            await this.habitsCollection.add(habit);
+            this.closeModal('addHabitModal');
+            this.resetForm();
+            // O listener onSnapshot cuidará da re-renderização
+        } catch (error) {
+            console.error("Erro ao adicionar hábito: ", error);
+            alert("Não foi possível adicionar o hábito. Tente novamente.");
         }
     }
 
-    toggleHabitCompletion(habitId, date = null) {
+    async deleteHabit(habitId) {
+        if (confirm('Tem certeza que deseja excluir este hábito? Esta ação não pode ser desfeita.')) {
+            try {
+                await this.habitsCollection.doc(habitId).delete();
+                // O listener onSnapshot cuidará da re-renderização
+            } catch (error) {
+                console.error("Erro ao excluir hábito: ", error);
+                alert("Não foi possível excluir o hábito. Tente novamente.");
+            }
+        }
+    }
+
+    async toggleHabitCompletion(habitId, date = null) {
         const dateKey = date || this.formatDate(new Date());
         const habit = this.habits.find(h => h.id === habitId);
         
         if (!habit) return;
 
-        if (!habit.completions[dateKey]) {
-            habit.completions[dateKey] = 0;
-        }
+        const currentCompletion = habit.completions[dateKey] || 0;
+        const newCompletion = currentCompletion >= habit.goal ? 0 : habit.goal;
 
-        // Toggle between 0 and goal
-        if (habit.completions[dateKey] >= habit.goal) {
-            habit.completions[dateKey] = 0;
-        } else {
-            habit.completions[dateKey] = habit.goal;
-        }
-
-        this.saveHabits();
-        this.renderDashboard();
-        this.renderProgress();
-        this.updateQuickStats();
+        // Usamos a notação de ponto para atualizar um campo dentro de um objeto (map) no Firestore
+        await this.habitsCollection.doc(habitId).update({
+            [`completions.${dateKey}`]: newCompletion
+        });
+        // O listener onSnapshot cuidará da re-renderização
     }
 
     // Utility Functions
@@ -593,15 +600,23 @@ class HabitsTracker {
     }
 
     // Data Management
-    resetAllData() {
+    async resetAllData() {
         if (confirm('Tem certeza que deseja resetar todos os dados? Esta ação não pode ser desfeita.')) {
-            localStorage.removeItem('habits-tracker-data');
-            this.habits = [];
-            this.renderDashboard();
-            this.renderProgress();
-            this.renderHabitsList();
-            this.updateQuickStats();
-            this.closeModal('settingsModal');
+            try {
+                // Para deletar uma coleção, precisamos deletar cada documento individualmente
+                const snapshot = await this.habitsCollection.get();
+                const batch = this.db.batch();
+                snapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+                
+                this.closeModal('settingsModal');
+                // O listener onSnapshot cuidará da re-renderização para o estado vazio
+            } catch (error) {
+                console.error("Erro ao resetar os dados: ", error);
+                alert("Não foi possível resetar os dados. Tente novamente.");
+            }
         }
     }
 
@@ -871,5 +886,10 @@ class HabitsTracker {
 let habitsTracker;
 
 document.addEventListener('DOMContentLoaded', () => {
-    habitsTracker = new HabitsTracker();
+    // Aguarda um instante para garantir que o script do Firebase foi carregado e inicializado
+    setTimeout(() => {
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            habitsTracker = new HabitsTracker();
+        }
+    }, 500);
 });

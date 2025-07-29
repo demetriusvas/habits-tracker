@@ -265,7 +265,30 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- SDKs do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Inicialização do Firebase -->
+    <script>
+      // Sua configuração do Firebase que você copiou do console
+      // SUBSTITUA PELOS SEUS DADOS REAIS
+      const firebaseConfig = {
+        apiKey: "AIzaSyCG6CwyGukEYfben3IktUzVVcjr3Og0Zds",
+        authDomain: "habits-tracker-app-8d89e.firebaseapp.com",
+        projectId: "habits-tracker-app-8d89e",
+        storageBucket: "habits-tracker-app-8d89e.firebasestorage.app",
+        messagingSenderId: "653449349967",
+        appId: "1:653449349967:web:7147f98500909020cc533a",
+        measurementId: "G-7E0TW4SKSJ"
+    };
+
+      // Inicializa o Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore(); // Disponibiliza a instância do Firestore globalmente
+    </script>
+
     <script src="script.js"></script>
 </body>
 </html>
-
