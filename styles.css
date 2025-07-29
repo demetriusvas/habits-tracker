@@ -1096,6 +1096,23 @@ input[type="checkbox"] {
     margin-bottom: var(--spacing-xl);
 }
 
+.auth-options {
+    text-align: right;
+    margin-top: calc(-1 * var(--spacing-md)); /* Ajusta o espaçamento do flex container */
+}
+
+.auth-options a {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.auth-options a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
 .auth-title i {
     color: var(--accent);
 }

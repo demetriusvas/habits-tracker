@@ -89,6 +89,11 @@ class HabitsTracker {
         const googleSignInBtn = document.getElementById('googleSignInBtn');
         googleSignInBtn.addEventListener('click', () => this.googleSignIn(googleSignInBtn));
 
+        document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.sendPasswordReset();
+        });
+
         document.getElementById('openSignupModalLink').addEventListener('click', (e) => {
             e.preventDefault();
             this.openAuthModal();
@@ -161,6 +166,14 @@ class HabitsTracker {
         // Event Delegation for dynamic content
         ['todayHabits', 'habitsProgress', 'habitsList'].forEach(containerId => {
             document.getElementById(containerId).addEventListener('click', (e) => this.handleDynamicContentClick(e));
+        });
+
+        // Limpa erros de autenticação ao digitar
+        ['loginEmail', 'loginPassword'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                const errorElement = document.getElementById('loginErrorMessage');
+                if (errorElement.textContent) errorElement.textContent = '';
+            });
         });
     }
     
@@ -281,6 +294,32 @@ class HabitsTracker {
             }
         } finally {
             this._setButtonLoading(buttonElement, false);
+        }
+    }
+
+    // Password Reset
+    async sendPasswordReset() {
+        const emailInput = document.getElementById('loginEmail');
+        const email = emailInput.value.trim();
+        const messageElement = document.getElementById('loginErrorMessage');
+
+        if (!email) {
+            messageElement.textContent = 'Por favor, insira seu email no campo acima e clique novamente.';
+            messageElement.style.color = 'var(--error)';
+            emailInput.focus();
+            return;
+        }
+
+        messageElement.textContent = 'Enviando email...';
+        messageElement.style.color = 'var(--text-secondary)';
+
+        try {
+            await firebase.auth().sendPasswordResetEmail(email);
+            messageElement.textContent = 'Email de redefinição enviado! Verifique sua caixa de entrada.';
+            messageElement.style.color = 'var(--success)';
+        } catch (error) {
+            messageElement.textContent = this.getFriendlyAuthErrorMessage(error);
+            messageElement.style.color = 'var(--error)';
         }
     }
 
