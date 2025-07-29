@@ -12,6 +12,7 @@ class HabitsTracker {
         this.habits = [];
         this.currentView = 'week';
         this.currentDate = new Date();
+        this.editingHabitId = null;
         
         this.init();
     }
@@ -85,7 +86,7 @@ class HabitsTracker {
         // Form submission
         document.getElementById('habitForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            this.addHabit();
+            this.submitHabitForm();
         });
 
         // Icon selector
@@ -120,7 +121,15 @@ class HabitsTracker {
     // Data Management (agora com Firestore)
     // Os métodos agora são 'async' para aguardar a resposta do banco de dados
 
-    async addHabit() {
+    async submitHabitForm() {
+        if (this.editingHabitId) {
+            await this.updateHabit(this.editingHabitId);
+        } else {
+            await this.createHabit();
+        }
+    }
+
+    async createHabit() {
         const name = document.getElementById('habitName').value.trim();
         const icon = document.getElementById('selectedIcon').value;
         const frequency = document.getElementById('habitFrequency').value;
@@ -148,11 +157,35 @@ class HabitsTracker {
         try {
             await this.habitsCollection.add(habit);
             this.closeModal('addHabitModal');
-            this.resetForm();
             // O listener onSnapshot cuidará da re-renderização
         } catch (error) {
             console.error("Erro ao adicionar hábito: ", error);
             alert("Não foi possível adicionar o hábito. Tente novamente.");
+        }
+    }
+
+    async updateHabit(habitId) {
+        const name = document.getElementById('habitName').value.trim();
+        const icon = document.getElementById('selectedIcon').value;
+        const frequency = document.getElementById('habitFrequency').value;
+        const time = document.getElementById('habitTime').value;
+        const goal = parseInt(document.getElementById('habitGoal').value);
+        const unit = document.getElementById('habitUnit').value;
+
+        if (!name) {
+            alert('Por favor, insira um nome para o hábito.');
+            return;
+        }
+
+        const habitData = { name, icon, frequency, time, goal, unit };
+
+        try {
+            await this.habitsCollection.doc(habitId).update(habitData);
+            this.closeModal('addHabitModal');
+            // O listener onSnapshot cuidará da re-renderização
+        } catch (error) {
+            console.error("Erro ao atualizar hábito: ", error);
+            alert("Não foi possível atualizar o hábito. Tente novamente.");
         }
     }
 
@@ -465,8 +498,11 @@ class HabitsTracker {
                         </div>
                     </div>
                     <div class="habit-item-actions">
+                        <button class="btn-icon" onclick="habitsTracker.openEditHabitModal('${habit.id}')" title="Editar Hábito">
+                            <i class="fas fa-edit"></i>
+                        </button>
                         <button class="btn-icon" onclick="habitsTracker.deleteHabit('${habit.id}')" title="Excluir hábito">
-                            🗑️
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
@@ -545,6 +581,30 @@ class HabitsTracker {
     }
 
     openAddHabitModal() {
+        this.resetHabitModal(); // Garante que o modal está no modo "Adicionar"
+        this.openModal('addHabitModal');
+    }
+
+    openEditHabitModal(habitId) {
+        const habit = this.habits.find(h => h.id === habitId);
+        if (!habit) return;
+
+        this.editingHabitId = habitId;
+
+        // Change modal title and button
+        document.getElementById('habitModalTitle').textContent = 'Editar Hábito';
+        document.getElementById('habitSubmitBtn').textContent = 'Salvar Alterações';
+
+        // Populate form
+        document.getElementById('habitName').value = habit.name;
+        document.getElementById('habitFrequency').value = habit.frequency;
+        document.getElementById('habitTime').value = habit.time || '';
+        document.getElementById('habitGoal').value = habit.goal;
+        document.getElementById('habitUnit').value = habit.unit;
+        document.getElementById('selectedIcon').value = habit.icon;
+
+        // Select the correct icon in the UI
+        this.selectIcon(document.querySelector(`.icon-option[data-icon="${habit.icon}"]`));
         this.openModal('addHabitModal');
     }
 
@@ -556,6 +616,9 @@ class HabitsTracker {
     closeModal(modalId) {
         document.getElementById(modalId).classList.remove('active');
         document.body.style.overflow = 'auto';
+        if (modalId === 'addHabitModal') {
+            this.resetHabitModal();
+        }
     }
 
     selectIcon(iconElement) {
@@ -566,13 +629,19 @@ class HabitsTracker {
         document.getElementById('selectedIcon').value = iconElement.dataset.icon;
     }
 
-    resetForm() {
+    resetHabitModal() {
+        this.editingHabitId = null;
         document.getElementById('habitForm').reset();
+
+        document.getElementById('habitModalTitle').textContent = 'Adicionar Novo Hábito';
+        document.getElementById('habitSubmitBtn').textContent = 'Adicionar Hábito';
+
         document.querySelectorAll('.icon-option').forEach(option => {
             option.classList.remove('active');
         });
-        document.querySelector('.icon-option').classList.add('active');
-        document.getElementById('selectedIcon').value = '💧';
+        const firstIcon = document.querySelector('.icon-option');
+        firstIcon.classList.add('active');
+        document.getElementById('selectedIcon').value = firstIcon.dataset.icon;
     }
 
     // Theme Management
