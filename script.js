@@ -20,6 +20,7 @@ class HabitsTracker {
     async init() {
         this.setupEventListeners();
         this.listenForHabitChanges(); // Inicia o listener em tempo real
+        this.setupAuthListeners();
         this.renderCurrentDate();
         this.loadTheme();
     }
@@ -116,6 +117,130 @@ class HabitsTracker {
                 }
             });
         });
+    }
+    
+    setupAuthListeners() {
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                // User is signed in
+                this.loadUserData(user);
+                this.showAppContent();
+                this.updateUIForAuth(true); // Mostra botão de logout
+            } else {
+                // No user is signed in
+                this.showAuthForm();
+                this.updateUIForAuth(false); // Mostra botões de login
+            }
+        });
+    }
+
+    // UI updates based on auth state
+    updateUIForAuth(isSignedIn) {
+        const authButtons = document.getElementById('authButtons');
+        const logoutButton = document.getElementById('logoutButton');
+    
+        if (isSignedIn) {
+            authButtons.style.display = 'none';
+            logoutButton.style.display = 'block';
+        } else {
+            authButtons.style.display = 'block';
+            logoutButton.style.display = 'none';
+        }
+    }
+
+    // Load user data
+    async loadUserData(user) {
+        // Store user ID
+        this.userId = user.uid;
+    
+        // Update habits collection to use user ID
+        this.habitsCollection = this.db.collection('users').doc(user.uid).collection('habits');
+        this.listenForHabitChanges(); // Re-attaches listener with new collection
+    }
+
+    // Sign-up
+    async signup(email, password) {
+        try {
+            await firebase.auth().createUserWithEmailAndPassword(email, password);
+            this.closeModal('authModal');
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    // Login
+    async login(email, password) {
+        try {
+            await firebase.auth().signInWithEmailAndPassword(email, password);
+            this.closeModal('authModal');
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    // Logout
+    async logout() {
+        try {
+            await firebase.auth().signOut();
+            this.updateUIForAuth(false);
+            this.showAuthForm();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    // Google Sign-in
+    async googleSignIn() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try {
+            await firebase.auth().signInWithPopup(provider);
+            this.closeModal('authModal');
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    // UI methods
+    showAppContent() {
+        document.getElementById('authForm').style.display = 'none';
+        document.getElementById('appContent').style.display = 'block';
+    }
+
+    showAuthForm() {
+        document.getElementById('authForm').style.display = 'block';
+        document.getElementById('appContent').style.display = 'none';
+    }
+
+    openAuthModal(formType) {
+        // Set the form type (login or signup)
+        document.getElementById('authFormType').value = formType;
+        
+        // Show the modal
+        this.openModal('authModal');
+    }
+
+    resetAuthModal() {
+        // Reset the form
+        document.getElementById('authForm').reset();
+        
+        // Clear the error message
+        document.getElementById('authErrorMessage').textContent = '';
+    }
+
+    validateAuthForm() {
+        const formType = document.getElementById('authFormType').value;
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+
+        if (!email || !password) {
+            alert('Por favor, preencha todos os campos.');
+            return false;
+        }
+
+        if (password.length < 6 && formType === 'signup') {
+            alert('A senha deve ter pelo menos 6 caracteres.');
+            return false;
+        }
     }
 
     // Data Management (agora com Firestore)
@@ -634,6 +759,12 @@ class HabitsTracker {
         document.getElementById('selectedIcon').value = firstIcon.dataset.icon;
     }
 
+    // Statistics Implementation
+    renderStatistics() {
+        this.renderOverallChart();
+        this.renderWeeklyChart();
+        this.renderTopHabits();
+    }
     // Theme Management
     loadTheme() {
         const savedTheme = localStorage.getItem('habits-tracker-theme') || 'dark';
@@ -679,13 +810,6 @@ class HabitsTracker {
         }
     }
 
-    // Statistics Implementation
-    renderStatistics() {
-        this.renderOverallChart();
-        this.renderWeeklyChart();
-        this.renderTopHabits();
-        this.renderCurrentStreaks();
-    }
 
     renderOverallChart() {
         const ctx = document.getElementById('overallChart');
@@ -847,7 +971,7 @@ class HabitsTracker {
         const container = document.getElementById('topHabits');
         if (!container) return;
 
-        if (this.habits.length === 0) {
+       if (this.habits.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-trophy"></i>
@@ -905,7 +1029,7 @@ class HabitsTracker {
         const streakHabits = this.habits
             .map(habit => ({
                 ...habit,
-                streak: this.calculateStreak(habit)
+               streak: this.calculateStreak(habit)
             }))
             .filter(habit => habit.streak > 0)
             .sort((a, b) => b.streak - a.streak);

@@ -48,6 +48,31 @@
             </button>
         </nav>
 
+        <!-- Authentication Form -->
+        <div class="auth-form" id="authForm" style="display: none;">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="hidden" id="authFormType" value="login">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="authEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="authPassword" name="password" required>
+                </div>
+                <button type="button" onclick="habitsTracker.login(document.getElementById('authEmail').value, document.getElementById('authPassword').value)" class="btn-primary">Login</button>
+                <button type="button" onclick="habitsTracker.openAuthModal('signup')" class="btn-secondary">Criar Conta</button>
+                <button type="button" onclick="habitsTracker.googleSignIn()" class="btn-secondary">Login com Google</button>
+            </form>
+        </div>
+
+        <div class="auth-buttons" id="authButtons">
+            <button onclick="habitsTracker.openAuthModal('login')" class="btn-primary">Login</button>
+            <button onclick="habitsTracker.openAuthModal('signup')" class="btn-secondary">Criar Conta</button>
+        </div>
+        <button id="logoutButton" onclick="habitsTracker.logout()" style="display:none" class="btn-secondary">Logout</button>
+
         <!-- Main Content -->
         <main class="main-content">
             <!-- Dashboard Tab -->
@@ -232,6 +257,40 @@
                 </form>
             </div>
         </div>
+
+        <!-- Auth Modal -->
+        <div class="modal" id="authModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="authModalTitle">Criar Conta</h3>
+                    <button class="btn-close" onclick="habitsTracker.closeModal('authModal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="settings-content">
+                    <div class="setting-item">
+                        <form id="authForm2">
+                            <input type="hidden" id="authFormType" value="signup">
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="authEmail" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Senha</label>
+                                <input type="password" id="authPassword" name="password" required>
+                            </div>
+                            <button type="button" onclick="habitsTracker.signup(document.getElementById('authEmail').value, document.getElementById('authPassword').value)" class="btn-primary">Criar Conta</button>
+                            <button type="button" onclick="habitsTracker.login(document.getElementById('authEmail').value, document.getElementById('authPassword').value)" class="btn-secondary">Já tenho uma conta</button>
+                            <button type="button" onclick="habitsTracker.googleSignIn()" class="btn-secondary">Criar conta com Google</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <p id="authErrorMessage" style="color: red;"></p>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Settings Modal -->
         <div class="modal" id="settingsModal">
