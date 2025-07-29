@@ -8,7 +8,7 @@ class HabitsTracker {
             return;
         }
         this.db = db;
-        this.habitsCollection = this.db.collection('habits');
+        this.habitsCollection = null;
         this.habits = [];
         this.currentView = 'week';
         this.currentDate = new Date();
@@ -22,7 +22,6 @@ class HabitsTracker {
 
     async init() {
         this.setupEventListeners();
-        this.listenForHabitChanges(); // Inicia o listener em tempo real
         this.setupAuthListeners();
         this.renderCurrentDate();
         this.loadTheme();
@@ -181,6 +180,7 @@ class HabitsTracker {
                 // Limpa dados para evitar mostrar dados do usuário anterior
                 this.habits = [];
                 this.userId = null;
+                this.habitsCollection = null;
                 this.renderAll();
             }
         });
@@ -279,8 +279,17 @@ class HabitsTracker {
     }
 
     openAuthModal() {
+        this.resetAuthModal();
         // Show the modal
         this.openModal('authModal');
+    }
+
+    resetAuthModal() {
+        const form = document.getElementById('signupForm');
+        if (form) form.reset();
+
+        const errorMsg = document.getElementById('authErrorMessage');
+        if (errorMsg) errorMsg.textContent = '';
     }
 
     // Data Management (agora com Firestore)
