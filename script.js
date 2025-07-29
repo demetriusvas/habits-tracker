@@ -289,7 +289,7 @@ class HabitsTracker {
                     <div class="habit-header">
                         <div class="habit-info">
                             <div class="habit-icon">
-                                <i class="${habit.icon}"></i>
+                                ${habit.icon}
                             </div>
                             <div class="habit-details">
                                 <h3>${habit.name}</h3>
@@ -374,7 +374,7 @@ class HabitsTracker {
             <div class="habit-progress">
                 <div class="progress-header-habit">
                     <div class="habit-icon">
-                        <i class="${habit.icon}"></i>
+                        ${habit.icon}
                     </div>
                     <div class="habit-details">
                         <h3>${habit.name}</h3>
@@ -416,7 +416,7 @@ class HabitsTracker {
             <div class="habit-progress">
                 <div class="progress-header-habit">
                     <div class="habit-icon">
-                        <i class="${habit.icon}"></i>
+                        ${habit.icon}
                     </div>
                     <div class="habit-details">
                         <h3>${habit.name}</h3>
@@ -454,7 +454,7 @@ class HabitsTracker {
                 <div class="habit-item">
                     <div class="habit-item-info">
                         <div class="habit-icon">
-                            <i class="${habit.icon}"></i>
+                            ${habit.icon}
                         </div>
                         <div class="habit-details">
                             <h3>${habit.name}</h3>
@@ -466,7 +466,7 @@ class HabitsTracker {
                     </div>
                     <div class="habit-item-actions">
                         <button class="btn-icon" onclick="habitsTracker.deleteHabit('${habit.id}')" title="Excluir hábito">
-                            <i class="fas fa-trash"></i>
+                            🗑️
                         </button>
                     </div>
                 </div>
@@ -572,7 +572,7 @@ class HabitsTracker {
             option.classList.remove('active');
         });
         document.querySelector('.icon-option').classList.add('active');
-        document.getElementById('selectedIcon').value = 'fas fa-water';
+        document.getElementById('selectedIcon').value = '💧';
     }
 
     // Theme Management
