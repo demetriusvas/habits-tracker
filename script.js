@@ -80,22 +80,27 @@ class HabitsTracker {
         });
 
         // Auth screen listeners
-        document.getElementById('loginBtn').addEventListener('click', () => {
+        const loginBtn = document.getElementById('loginBtn');
+        loginBtn.addEventListener('click', () => {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            this.login(email, password);
+            this.login(email, password, loginBtn);
         });
-        document.getElementById('googleSignInBtn').addEventListener('click', () => this.googleSignIn());
+
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        googleSignInBtn.addEventListener('click', () => this.googleSignIn(googleSignInBtn));
+
         document.getElementById('openSignupModalLink').addEventListener('click', (e) => {
             e.preventDefault();
             this.openAuthModal();
         });
 
         // Auth modal listeners
-        document.getElementById('signupBtn').addEventListener('click', () => {
+        const signupBtn = document.getElementById('signupBtn');
+        signupBtn.addEventListener('click', () => {
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
-            this.signup(email, password);
+            this.signup(email, password, signupBtn);
         });
         document.getElementById('closeAuthModal').addEventListener('click', () => this.closeModal('authModal'));
 
@@ -201,29 +206,35 @@ class HabitsTracker {
     }
 
     // Sign-up
-    async signup(email, password) {
+    async signup(email, password, buttonElement) {
         if (password.length < 6) {
             alert('A senha deve ter pelo menos 6 caracteres.');
             return;
         }
         if (!email) { alert('Por favor, insira um email.'); return; }
 
+        this._setButtonLoading(buttonElement, true);
         try {
             await firebase.auth().createUserWithEmailAndPassword(email, password);
             this.closeModal('authModal');
         } catch (error) {
             alert(error.message);
+        } finally {
+            this._setButtonLoading(buttonElement, false);
         }
     }
 
     // Login
-    async login(email, password) {
+    async login(email, password, buttonElement) {
         if (!email || !password) { alert('Por favor, preencha email e senha.'); return; }
 
+        this._setButtonLoading(buttonElement, true);
         try {
             await firebase.auth().signInWithEmailAndPassword(email, password);
         } catch (error) {
             alert(error.message);
+        } finally {
+            this._setButtonLoading(buttonElement, false);
         }
     }
 
@@ -237,12 +248,33 @@ class HabitsTracker {
     }
 
     // Google Sign-in
-    async googleSignIn() {
+    async googleSignIn(buttonElement) {
         const provider = new firebase.auth.GoogleAuthProvider();
+        this._setButtonLoading(buttonElement, true);
         try {
             await firebase.auth().signInWithPopup(provider);
         } catch (error) {
-            alert(error.message);
+            // Don't show an error if the user closes the popup
+            if (error.code !== 'auth/popup-closed-by-user') {
+                alert(error.message);
+            }
+        } finally {
+            this._setButtonLoading(buttonElement, false);
+        }
+    }
+
+    // Helper to manage button loading state
+    _setButtonLoading(button, isLoading) {
+        if (!button) return;
+        if (isLoading) {
+            button.dataset.originalHtml = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        } else {
+            button.disabled = false;
+            if (button.dataset.originalHtml) {
+                button.innerHTML = button.dataset.originalHtml;
+            }
         }
     }
 
