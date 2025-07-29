@@ -289,7 +289,7 @@ class HabitsTracker {
                     <div class="habit-header">
                         <div class="habit-info">
                             <div class="habit-icon">
-                                ${habit.icon}
+                                <i class="${habit.icon}"></i>
                             </div>
                             <div class="habit-details">
                                 <h3>${habit.name}</h3>
@@ -374,7 +374,7 @@ class HabitsTracker {
             <div class="habit-progress">
                 <div class="progress-header-habit">
                     <div class="habit-icon">
-                        ${habit.icon}
+                        <i class="${habit.icon}"></i>
                     </div>
                     <div class="habit-details">
                         <h3>${habit.name}</h3>
@@ -416,7 +416,7 @@ class HabitsTracker {
             <div class="habit-progress">
                 <div class="progress-header-habit">
                     <div class="habit-icon">
-                        ${habit.icon}
+                        <i class="${habit.icon}"></i>
                     </div>
                     <div class="habit-details">
                         <h3>${habit.name}</h3>
@@ -454,7 +454,7 @@ class HabitsTracker {
                 <div class="habit-item">
                     <div class="habit-item-info">
                         <div class="habit-icon">
-                            ${habit.icon}
+                            <i class="${habit.icon}"></i>
                         </div>
                         <div class="habit-details">
                             <h3>${habit.name}</h3>
@@ -815,7 +815,7 @@ class HabitsTracker {
                 <div class="top-habit-item">
                     <div class="rank">${medal}</div>
                     <div class="habit-icon">
-                        <i class="${habit.icon}"></i>
+                        ${habit.icon}
                     </div>
                     <div class="habit-info">
                         <div class="habit-name">${habit.name}</div>
@@ -870,7 +870,7 @@ class HabitsTracker {
                 <div class="streak-item">
                     <div class="streak-icon">${streakIcon}</div>
                     <div class="habit-icon">
-                        <i class="${habit.icon}"></i>
+                        ${habit.icon}
                     </div>
                     <div class="habit-info">
                         <div class="habit-name">${habit.name}</div>
