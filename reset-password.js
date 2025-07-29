@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const resetForm = document.getElementById('resetForm');
     const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
     const messageElement = document.getElementById('resetMessage');
     const resetBtn = document.getElementById('resetBtn');
     const loginLinkContainer = document.getElementById('loginLinkContainer');
@@ -30,8 +31,16 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
         if (newPassword.length < 6) {
             messageElement.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+            messageElement.className = 'message error';
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            messageElement.textContent = 'As senhas não coincidem. Tente novamente.';
             messageElement.className = 'message error';
             return;
         }
