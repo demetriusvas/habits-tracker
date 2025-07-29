@@ -82,6 +82,7 @@ body {
 
 .app-container {
     min-height: 100vh;
+    /* display: flex; by default, but will be controlled by JS */
     display: flex;
     flex-direction: column;
 }
@@ -116,6 +117,7 @@ body {
 
 .header-actions {
     display: flex;
+    align-items: center;
     gap: var(--spacing-sm);
 }
 
@@ -1061,4 +1063,114 @@ input[type="checkbox"] {
         height: 28px;
         font-size: var(--font-size-sm);
     }
+}
+
+/* Authentication Screen Styles */
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--spacing-md);
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 400px;
+    background-color: var(--bg-secondary);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    text-align: center;
+    box-shadow: 0 8px 24px var(--shadow);
+}
+
+.auth-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+}
+
+.auth-title i {
+    color: var(--accent);
+}
+
+.auth-form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.auth-form-stack .form-group {
+    margin-bottom: 0;
+    text-align: left;
+}
+
+.auth-form-stack .btn-primary {
+    width: 100%;
+}
+
+.auth-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--text-secondary);
+    margin: var(--spacing-lg) 0;
+    font-size: var(--font-size-sm);
+}
+
+.auth-separator::before,
+.auth-separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border);
+}
+
+.auth-separator:not(:empty)::before {
+    margin-right: .5em;
+}
+
+.auth-separator:not(:empty)::after {
+    margin-left: .5em;
+}
+
+.btn-google {
+    width: 100%;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.btn-google:hover {
+    background-color: #f2f2f2;
+}
+
+.auth-footer {
+    margin-top: var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.auth-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
 }

@@ -13,6 +13,9 @@ class HabitsTracker {
         this.currentView = 'week';
         this.currentDate = new Date();
         this.editingHabitId = null;
+        this.appWrapper = document.getElementById('appWrapper');
+        this.authContainer = document.getElementById('authContainer');
+        this.unsubscribeHabits = null; // Para desligar o listener do Firestore
         
         this.init();
     }
@@ -35,7 +38,15 @@ class HabitsTracker {
 
     // Listener em tempo real para atualizações do Firestore
     listenForHabitChanges() {
-        this.habitsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        // Se já existe um listener, desliga ele antes de criar um novo
+        if (this.unsubscribeHabits) {
+            this.unsubscribeHabits();
+        }
+
+        // Só cria um listener se tivermos uma coleção (usuário logado)
+        if (!this.habitsCollection) return;
+
+        this.unsubscribeHabits = this.habitsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
             this.habits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             console.log('Hábitos carregados/atualizados do Firestore:', this.habits);
             // Re-renderiza tudo sempre que os dados mudam
@@ -67,6 +78,26 @@ class HabitsTracker {
         document.getElementById('cancelBtn').addEventListener('click', () => {
             this.closeModal('addHabitModal');
         });
+
+        // Auth screen listeners
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            this.login(email, password);
+        });
+        document.getElementById('googleSignInBtn').addEventListener('click', () => this.googleSignIn());
+        document.getElementById('openSignupModalLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.openAuthModal();
+        });
+
+        // Auth modal listeners
+        document.getElementById('signupBtn').addEventListener('click', () => {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            this.signup(email, password);
+        });
+        document.getElementById('closeAuthModal').addEventListener('click', () => this.closeModal('authModal'));
 
         // Settings modal
         document.getElementById('settingsBtn').addEventListener('click', () => {
@@ -109,6 +140,11 @@ class HabitsTracker {
             this.resetAllData();
         });
 
+        // Logout button
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            this.logout();
+        });
+
         // Close modal on backdrop click
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => {
@@ -123,28 +159,34 @@ class HabitsTracker {
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
                 // User is signed in
-                this.loadUserData(user);
-                this.showAppContent();
+                this.authContainer.style.display = 'none';
+                this.appWrapper.style.display = 'flex';
+                this.loadUserData(user); // Carrega dados específicos do usuário
                 this.updateUIForAuth(true); // Mostra botão de logout
             } else {
                 // No user is signed in
-                this.showAuthForm();
+                // Garante que o listener de hábitos do usuário anterior seja removido
+                if (this.unsubscribeHabits) {
+                    this.unsubscribeHabits();
+                    this.unsubscribeHabits = null;
+                }
+                this.authContainer.style.display = 'flex';
+                this.appWrapper.style.display = 'none';
                 this.updateUIForAuth(false); // Mostra botões de login
+                // Limpa dados para evitar mostrar dados do usuário anterior
+                this.habits = [];
+                this.userId = null;
+                this.renderAll();
             }
         });
     }
 
     // UI updates based on auth state
     updateUIForAuth(isSignedIn) {
-        const authButtons = document.getElementById('authButtons');
         const logoutButton = document.getElementById('logoutButton');
     
-        if (isSignedIn) {
-            authButtons.style.display = 'none';
-            logoutButton.style.display = 'block';
-        } else {
-            authButtons.style.display = 'block';
-            logoutButton.style.display = 'none';
+        if (logoutButton) {
+            logoutButton.style.display = isSignedIn ? 'block' : 'none';
         }
     }
 
@@ -160,6 +202,12 @@ class HabitsTracker {
 
     // Sign-up
     async signup(email, password) {
+        if (password.length < 6) {
+            alert('A senha deve ter pelo menos 6 caracteres.');
+            return;
+        }
+        if (!email) { alert('Por favor, insira um email.'); return; }
+
         try {
             await firebase.auth().createUserWithEmailAndPassword(email, password);
             this.closeModal('authModal');
@@ -170,9 +218,10 @@ class HabitsTracker {
 
     // Login
     async login(email, password) {
+        if (!email || !password) { alert('Por favor, preencha email e senha.'); return; }
+
         try {
             await firebase.auth().signInWithEmailAndPassword(email, password);
-            this.closeModal('authModal');
         } catch (error) {
             alert(error.message);
         }
@@ -182,8 +231,6 @@ class HabitsTracker {
     async logout() {
         try {
             await firebase.auth().signOut();
-            this.updateUIForAuth(false);
-            this.showAuthForm();
         } catch (error) {
             alert(error.message);
         }
@@ -194,53 +241,14 @@ class HabitsTracker {
         const provider = new firebase.auth.GoogleAuthProvider();
         try {
             await firebase.auth().signInWithPopup(provider);
-            this.closeModal('authModal');
         } catch (error) {
             alert(error.message);
         }
     }
 
-    // UI methods
-    showAppContent() {
-        document.getElementById('authForm').style.display = 'none';
-        document.getElementById('appContent').style.display = 'block';
-    }
-
-    showAuthForm() {
-        document.getElementById('authForm').style.display = 'block';
-        document.getElementById('appContent').style.display = 'none';
-    }
-
-    openAuthModal(formType) {
-        // Set the form type (login or signup)
-        document.getElementById('authFormType').value = formType;
-        
+    openAuthModal() {
         // Show the modal
         this.openModal('authModal');
-    }
-
-    resetAuthModal() {
-        // Reset the form
-        document.getElementById('authForm').reset();
-        
-        // Clear the error message
-        document.getElementById('authErrorMessage').textContent = '';
-    }
-
-    validateAuthForm() {
-        const formType = document.getElementById('authFormType').value;
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-
-        if (!email || !password) {
-            alert('Por favor, preencha todos os campos.');
-            return false;
-        }
-
-        if (password.length < 6 && formType === 'signup') {
-            alert('A senha deve ter pelo menos 6 caracteres.');
-            return false;
-        }
     }
 
     // Data Management (agora com Firestore)
@@ -764,6 +772,7 @@ class HabitsTracker {
         this.renderOverallChart();
         this.renderWeeklyChart();
         this.renderTopHabits();
+        this.renderCurrentStreaks();
     }
     // Theme Management
     loadTheme() {

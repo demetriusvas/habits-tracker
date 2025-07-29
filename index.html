@@ -9,7 +9,32 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
+    <!-- Tela de Autenticação (visível por padrão) -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-box">
+            <h1 class="auth-title">
+                <i class="fas fa-check-circle"></i>
+                Habits Tracker
+            </h1>
+            <form id="loginForm" class="auth-form-stack">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Senha</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="button" id="loginBtn" class="btn-primary">Entrar</button>
+            </form>
+            <div class="auth-separator"><span>ou</span></div>
+            <button type="button" id="googleSignInBtn" class="btn-google"><i class="fab fa-google"></i> Continuar com Google</button>
+            <p class="auth-footer">Não tem uma conta? <a href="#" id="openSignupModalLink">Crie uma agora</a></p>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal do App (oculto por padrão) -->
+    <div class="app-container" id="appWrapper" style="display: none;">
         <!-- Header -->
         <header class="header">
             <div class="header-content">
@@ -23,6 +48,9 @@
                     </button>
                     <button class="btn-icon" id="settingsBtn" title="Configurações">
                         <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="btn-icon" id="logoutButton" title="Sair" style="display: none;">
+                        <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
             </div>
@@ -47,31 +75,6 @@
                 <span>Estatísticas</span>
             </button>
         </nav>
-
-        <!-- Authentication Form -->
-        <div class="auth-form" id="authForm" style="display: none;">
-            <h2>Login</h2>
-            <form id="loginForm">
-                <input type="hidden" id="authFormType" value="login">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="authEmail" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Senha</label>
-                    <input type="password" id="authPassword" name="password" required>
-                </div>
-                <button type="button" onclick="habitsTracker.login(document.getElementById('authEmail').value, document.getElementById('authPassword').value)" class="btn-primary">Login</button>
-                <button type="button" onclick="habitsTracker.openAuthModal('signup')" class="btn-secondary">Criar Conta</button>
-                <button type="button" onclick="habitsTracker.googleSignIn()" class="btn-secondary">Login com Google</button>
-            </form>
-        </div>
-
-        <div class="auth-buttons" id="authButtons">
-            <button onclick="habitsTracker.openAuthModal('login')" class="btn-primary">Login</button>
-            <button onclick="habitsTracker.openAuthModal('signup')" class="btn-secondary">Criar Conta</button>
-        </div>
-        <button id="logoutButton" onclick="habitsTracker.logout()" style="display:none" class="btn-secondary">Logout</button>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -215,7 +218,7 @@
                             <button type="button" class="icon-option" data-icon="🎵">🎵</button>
                             <button type="button" class="icon-option" data-icon="🦷">🦷</button>
                             <button type="button" class="icon-option" data-icon="🐶">🐶</button>
-                            <button type="button" class="icon-option" data-icon="🗽">🗽</button>
+                            <button type="button" class="icon-option" data-icon="🇺🇸">🇺🇸</button>
                             <button type="button" class="icon-option" data-icon="🎨">🎨</button>
                             <button type="button" class="icon-option" data-icon="☕">☕</button>
                             <button type="button" class="icon-option" data-icon="🌍">🌍</button>
@@ -262,31 +265,26 @@
         <div class="modal" id="authModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 id="authModalTitle">Criar Conta</h3>
-                    <button class="btn-close" onclick="habitsTracker.closeModal('authModal')">
+                    <h3 id="authModalTitle">Criar Nova Conta</h3>
+                    <button class="btn-close" id="closeAuthModal">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <div class="settings-content">
-                    <div class="setting-item">
-                        <form id="authForm2">
-                            <input type="hidden" id="authFormType" value="signup">
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" id="authEmail" name="email" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="password">Senha</label>
-                                <input type="password" id="authPassword" name="password" required>
-                            </div>
-                            <button type="button" onclick="habitsTracker.signup(document.getElementById('authEmail').value, document.getElementById('authPassword').value)" class="btn-primary">Criar Conta</button>
-                            <button type="button" onclick="habitsTracker.login(document.getElementById('authEmail').value, document.getElementById('authPassword').value)" class="btn-secondary">Já tenho uma conta</button>
-                            <button type="button" onclick="habitsTracker.googleSignIn()" class="btn-secondary">Criar conta com Google</button>
-                        </form>
+                <div class="habit-form">
+                    <form id="signupForm">
+                        <div class="form-group">
+                            <label for="signupEmail">Email</label>
+                            <input type="email" id="signupEmail" name="email" required placeholder="seu@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="signupPassword">Senha (mínimo 6 caracteres)</label>
+                            <input type="password" id="signupPassword" name="password" required placeholder="••••••••">
+                        </div>
+                        <button type="button" id="signupBtn" class="btn-primary">Criar Conta</button>
+                    </form>
+                    <div class="modal-footer">
+                        <p id="authErrorMessage" style="color: red;"></p>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <p id="authErrorMessage" style="color: red;"></p>
                 </div>
             </div>
         </div>
@@ -335,6 +333,7 @@
     <!-- SDKs do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <!-- Inicialização do Firebase -->
     <script>
