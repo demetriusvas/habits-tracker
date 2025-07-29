@@ -461,15 +461,8 @@ class HabitsTracker {
 
     renderDashboard() {
         const container = document.getElementById('todayHabits');
-        
         if (this.habits.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-plus-circle"></i>
-                    <h3>Nenhum hábito cadastrado</h3>
-                    <p>Comece adicionando seu primeiro hábito para acompanhar seu progresso diário.</p>
-                </div>
-            `;
+            this._renderEmptyState(container, 'fa-plus-circle', 'Nenhum hábito cadastrado', 'Comece adicionando seu primeiro hábito para acompanhar seu progresso diário.');
             return;
         }
 
@@ -522,15 +515,8 @@ class HabitsTracker {
 
     renderProgress() {
         const container = document.getElementById('habitsProgress');
-        
         if (this.habits.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>Nenhum progresso para mostrar</h3>
-                    <p>Adicione hábitos para visualizar seu progresso ao longo do tempo.</p>
-                </div>
-            `;
+            this._renderEmptyState(container, 'fa-chart-line', 'Nenhum progresso para mostrar', 'Adicione hábitos para visualizar seu progresso ao longo do tempo.');
             return;
         }
 
@@ -631,15 +617,8 @@ class HabitsTracker {
 
     renderHabitsList() {
         const container = document.getElementById('habitsList');
-        
         if (this.habits.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-list"></i>
-                    <h3>Nenhum hábito cadastrado</h3>
-                    <p>Comece criando seus primeiros hábitos para organizar sua rotina.</p>
-                </div>
-            `;
+            this._renderEmptyState(container, 'fa-list', 'Nenhum hábito cadastrado', 'Comece criando seus primeiros hábitos para organizar sua rotina.');
             return;
         }
 
@@ -712,6 +691,19 @@ class HabitsTracker {
         document.getElementById('todayCompletion').textContent = `${todayPercentage}%`;
         document.getElementById('weekCompletion').textContent = `${weekPercentage}%`;
     }
+
+    // Helper para renderizar estados vazios
+    _renderEmptyState(container, icon, title, message) {
+        if (!container) return;
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas ${icon}"></i>
+                <h3>${title}</h3>
+                <p>${message}</p>
+            </div>
+        `;
+    }
+
 
     // UI Controls
     switchTab(tabName) {
