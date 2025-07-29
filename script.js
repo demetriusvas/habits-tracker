@@ -207,18 +207,24 @@ class HabitsTracker {
 
     // Sign-up
     async signup(email, password, buttonElement) {
+        const errorElement = document.getElementById('authErrorMessage');
+        errorElement.textContent = '';
+
         if (password.length < 6) {
-            alert('A senha deve ter pelo menos 6 caracteres.');
+            errorElement.textContent = 'A senha deve ter pelo menos 6 caracteres.';
             return;
         }
-        if (!email) { alert('Por favor, insira um email.'); return; }
+        if (!email) {
+            errorElement.textContent = 'Por favor, insira um email.';
+            return;
+        }
 
         this._setButtonLoading(buttonElement, true);
         try {
             await firebase.auth().createUserWithEmailAndPassword(email, password);
             this.closeModal('authModal');
         } catch (error) {
-            alert(error.message);
+            errorElement.textContent = this.getFriendlyAuthErrorMessage(error);
         } finally {
             this._setButtonLoading(buttonElement, false);
         }
@@ -226,13 +232,19 @@ class HabitsTracker {
 
     // Login
     async login(email, password, buttonElement) {
-        if (!email || !password) { alert('Por favor, preencha email e senha.'); return; }
+        const errorElement = document.getElementById('loginErrorMessage');
+        errorElement.textContent = '';
+
+        if (!email || !password) {
+            errorElement.textContent = 'Por favor, preencha email e senha.';
+            return;
+        }
 
         this._setButtonLoading(buttonElement, true);
         try {
             await firebase.auth().signInWithEmailAndPassword(email, password);
         } catch (error) {
-            alert(error.message);
+            errorElement.textContent = this.getFriendlyAuthErrorMessage(error);
         } finally {
             this._setButtonLoading(buttonElement, false);
         }
@@ -243,23 +255,50 @@ class HabitsTracker {
         try {
             await firebase.auth().signOut();
         } catch (error) {
-            alert(error.message);
+            console.error("Erro ao fazer logout:", error);
+            alert("Não foi possível sair. Tente novamente.");
         }
     }
 
     // Google Sign-in
     async googleSignIn(buttonElement) {
         const provider = new firebase.auth.GoogleAuthProvider();
+        const errorElement = document.getElementById('loginErrorMessage');
+        errorElement.textContent = '';
+
         this._setButtonLoading(buttonElement, true);
         try {
             await firebase.auth().signInWithPopup(provider);
         } catch (error) {
-            // Don't show an error if the user closes the popup
-            if (error.code !== 'auth/popup-closed-by-user') {
-                alert(error.message);
+            const friendlyMessage = this.getFriendlyAuthErrorMessage(error);
+            if (friendlyMessage) {
+                errorElement.textContent = friendlyMessage;
             }
         } finally {
             this._setButtonLoading(buttonElement, false);
+        }
+    }
+
+    // Traduz mensagens de erro do Firebase para o usuário
+    getFriendlyAuthErrorMessage(error) {
+        switch (error.code) {
+            case 'auth/invalid-email':
+                return 'O formato do email é inválido.';
+            case 'auth/user-disabled':
+                return 'Este usuário foi desabilitado.';
+            case 'auth/user-not-found':
+                return 'Nenhuma conta encontrada com este email.';
+            case 'auth/wrong-password':
+                return 'Credenciais inválidas. Verifique seu email e senha.';
+            case 'auth/email-already-in-use':
+                return 'Este email já está em uso por outra conta.';
+            case 'auth/weak-password':
+                return 'A senha é muito fraca (mínimo 6 caracteres).';
+            case 'auth/popup-closed-by-user':
+                return null; // Não mostrar erro se o usuário fechar o popup
+            default:
+                console.error("Erro de autenticação não tratado:", error);
+                return 'Ocorreu um erro inesperado. Tente novamente.';
         }
     }
 
