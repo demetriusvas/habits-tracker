@@ -157,6 +157,11 @@ class HabitsTracker {
                 }
             });
         });
+
+        // Event Delegation for dynamic content
+        ['todayHabits', 'habitsProgress', 'habitsList'].forEach(containerId => {
+            document.getElementById(containerId).addEventListener('click', (e) => this.handleDynamicContentClick(e));
+        });
     }
     
     setupAuthListeners() {
@@ -528,8 +533,9 @@ class HabitsTracker {
                                 </div>
                             </div>
                         </div>
-                        <button class="habit-check ${isCompleted ? 'completed' : ''}" 
-                                onclick="habitsTracker.toggleHabitCompletion('${habit.id}')">
+                        <button class="habit-check ${isCompleted ? 'completed' : ''}"
+                                data-action="toggle-completion"
+                                data-habit-id="${habit.id}">
                             ${isCompleted ? '<i class="fas fa-check"></i>' : ''}
                         </button>
                     </div>
@@ -581,8 +587,10 @@ class HabitsTracker {
             const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' });
             
             return `
-                <div class="week-day-container" 
-                     onclick="habitsTracker.toggleHabitCompletion('${habit.id}', '${dateKey}')"
+                <div class="week-day-container"
+                     data-action="toggle-completion"
+                     data-habit-id="${habit.id}"
+                     data-date-key="${dateKey}"
                      title="${date.toLocaleDateString('pt-BR')}: Clique para alterar.">
                     <div class="week-day">${dayName}</div>
                     <div class="week-bar">
@@ -629,9 +637,10 @@ class HabitsTracker {
                 className += ' partial';
             }
 
-            return `<div class="${className}" 
+            return `<div class="${className}"
                          title="${date.toLocaleDateString('pt-BR')}: ${completion}/${habit.goal}. Clique para alterar."
-                         onclick="habitsTracker.toggleHabitCompletion('${habit.id}', '${dateKey}')"></div>`;
+                         data-action="toggle-completion" data-habit-id="${habit.id}" data-date-key="${dateKey}">
+                    </div>`;
         }).join('');
 
         return `
@@ -680,10 +689,10 @@ class HabitsTracker {
                         </div>
                     </div>
                     <div class="habit-item-actions">
-                        <button class="btn-icon" onclick="habitsTracker.openEditHabitModal('${habit.id}')" title="Editar Hábito">
+                        <button class="btn-icon" data-action="edit-habit" data-habit-id="${habit.id}" title="Editar Hábito">
                             ✏️
                         </button>
-                        <button class="btn-icon" onclick="habitsTracker.deleteHabit('${habit.id}')" title="Excluir hábito">
+                        <button class="btn-icon" data-action="delete-habit" data-habit-id="${habit.id}" title="Excluir hábito">
                             🗑️
                         </button>
                     </div>
@@ -743,6 +752,29 @@ class HabitsTracker {
         `;
     }
 
+    // Event Delegation Handler
+    handleDynamicContentClick(event) {
+        const target = event.target;
+        const actionElement = target.closest('[data-action]');
+
+        if (!actionElement) return;
+
+        const action = actionElement.dataset.action;
+        const habitId = actionElement.dataset.habitId;
+
+        switch (action) {
+            case 'toggle-completion':
+                const dateKey = actionElement.dataset.dateKey || null;
+                this.toggleHabitCompletion(habitId, dateKey);
+                break;
+            case 'edit-habit':
+                this.openEditHabitModal(habitId);
+                break;
+            case 'delete-habit':
+                this.deleteHabit(habitId);
+                break;
+        }
+    }
 
     // UI Controls
     switchTab(tabName) {
