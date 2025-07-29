@@ -129,7 +129,7 @@ class HabitsTracker {
         }
     }
 
-    async createHabit() {
+    _getHabitDataFromForm() {
         const name = document.getElementById('habitName').value.trim();
         const icon = document.getElementById('selectedIcon').value;
         const frequency = document.getElementById('habitFrequency').value;
@@ -139,23 +139,24 @@ class HabitsTracker {
 
         if (!name) {
             alert('Por favor, insira um nome para o hábito.');
-            return;
+            return null;
         }
 
-        const habit = {
-            // O ID será gerado automaticamente pelo Firestore
-            name,
-            icon,
-            frequency,
-            time,
-            goal,
-            unit,
+        return { name, icon, frequency, time, goal, unit };
+    }
+
+    async createHabit() {
+        const habitData = this._getHabitDataFromForm();
+        if (!habitData) return;
+
+        const newHabit = {
+            ...habitData,
             createdAt: new Date().toISOString(),
             completions: {}
         };
 
         try {
-            await this.habitsCollection.add(habit);
+            await this.habitsCollection.add(newHabit);
             this.closeModal('addHabitModal');
             // O listener onSnapshot cuidará da re-renderização
         } catch (error) {
@@ -165,19 +166,8 @@ class HabitsTracker {
     }
 
     async updateHabit(habitId) {
-        const name = document.getElementById('habitName').value.trim();
-        const icon = document.getElementById('selectedIcon').value;
-        const frequency = document.getElementById('habitFrequency').value;
-        const time = document.getElementById('habitTime').value;
-        const goal = parseInt(document.getElementById('habitGoal').value);
-        const unit = document.getElementById('habitUnit').value;
-
-        if (!name) {
-            alert('Por favor, insira um nome para o hábito.');
-            return;
-        }
-
-        const habitData = { name, icon, frequency, time, goal, unit };
+        const habitData = this._getHabitDataFromForm();
+        if (!habitData) return;
 
         try {
             await this.habitsCollection.doc(habitId).update(habitData);
@@ -884,7 +874,7 @@ class HabitsTracker {
                 <div class="top-habit-item">
                     <div class="rank">${medal}</div>
                     <div class="habit-icon">
-                        ${habit.icon}
+                        <i class="${habit.icon}"></i>
                     </div>
                     <div class="habit-info">
                         <div class="habit-name">${habit.name}</div>
@@ -939,7 +929,7 @@ class HabitsTracker {
                 <div class="streak-item">
                     <div class="streak-icon">${streakIcon}</div>
                     <div class="habit-icon">
-                        ${habit.icon}
+                        <i class="${habit.icon}"></i>
                     </div>
                     <div class="habit-info">
                         <div class="habit-name">${habit.name}</div>
