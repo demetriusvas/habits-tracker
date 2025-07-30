@@ -239,7 +239,11 @@ class HabitsTracker {
 
         this._setButtonLoading(buttonElement, true);
         try {
-            await firebase.auth().createUserWithEmailAndPassword(email, password);
+            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+            // Se for um novo usuário, cria o documento dele no Firestore
+            if (userCredential.additionalUserInfo.isNewUser) {
+                await this._createUserDocument(userCredential.user);
+            }
             this.closeModal('authModal');
         } catch (error) {
             errorElement.textContent = this.getFriendlyAuthErrorMessage(error);
@@ -286,7 +290,11 @@ class HabitsTracker {
 
         this._setButtonLoading(buttonElement, true);
         try {
-            await firebase.auth().signInWithPopup(provider);
+            const result = await firebase.auth().signInWithPopup(provider);
+            // Se for um novo usuário, cria o documento dele no Firestore
+            if (result.additionalUserInfo.isNewUser) {
+                await this._createUserDocument(result.user);
+            }
         } catch (error) {
             const friendlyMessage = this.getFriendlyAuthErrorMessage(error);
             if (friendlyMessage) {
@@ -294,6 +302,23 @@ class HabitsTracker {
             }
         } finally {
             this._setButtonLoading(buttonElement, false);
+        }
+    }
+
+    // Cria um documento para um novo usuário no Firestore
+    async _createUserDocument(user) {
+        if (!user) return;
+        const userRef = this.db.collection('users').doc(user.uid);
+        const userData = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || 'Usuário',
+            createdAt: new Date().toISOString()
+        };
+        try {
+            await userRef.set(userData, { merge: true });
+        } catch (error) {
+            console.error("Erro ao criar documento do usuário:", error);
         }
     }
 
