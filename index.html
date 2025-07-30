@@ -28,7 +28,7 @@
                 <div class="auth-options">
                     <a href="#" id="forgotPasswordLink">Esqueci minha senha?</a>
                 </div>
-                <p id="loginErrorMessage" style="color: var(--error); text-align: center; min-height: 1.2em; font-size: var(--font-size-sm);"></p>
+                <p id="loginErrorMessage" style="color: var(--error); text-align: center; min-height: 1.2em; font-size: var(--font-size-sm);" aria-live="polite"></p>
                 <button type="button" id="loginBtn" class="btn-primary">Entrar</button>
             </form>
             <div class="auth-separator"><span>ou</span></div>
@@ -47,13 +47,13 @@
                     Habits Tracker
                 </h1>
                 <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle" title="Alternar tema">
+                    <button class="btn-icon" id="themeToggle" title="Alternar tema" aria-label="Alternar tema">
                         <i class="fas fa-moon"></i>
                     </button>
-                    <button class="btn-icon" id="settingsBtn" title="Configurações">
+                    <button class="btn-icon" id="settingsBtn" title="Configurações" aria-label="Configurações">
                         <i class="fas fa-cog"></i>
                     </button>
-                    <button class="btn-icon" id="logoutButton" title="Sair" style="display: none;">
+                    <button class="btn-icon" id="logoutButton" title="Sair" style="display: none;" aria-label="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
@@ -193,11 +193,11 @@
         </main>
 
         <!-- Add Habit Modal -->
-        <div class="modal" id="addHabitModal">
+        <div class="modal" id="addHabitModal" role="dialog" aria-modal="true" aria-labelledby="habitModalTitle">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 id="habitModalTitle">Adicionar Novo Hábito</h3>
-                    <button class="btn-close" id="closeModal">
+                    <button class="btn-close" id="closeModal" aria-label="Fechar modal">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -266,11 +266,11 @@
         </div>
 
         <!-- Settings Modal -->
-        <div class="modal" id="settingsModal">
+        <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Configurações</h3>
-                    <button class="btn-close" id="closeSettingsModal">
+                    <h3 id="settingsModalTitle">Configurações</h3>
+                    <button class="btn-close" id="closeSettingsModal" aria-label="Fechar modal">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -304,11 +304,11 @@
     </div>
 
     <!-- Auth Modal -->
-    <div class="modal" id="authModal">
+    <div class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="authModalTitle">Criar Nova Conta</h3>
-                <button class="btn-close" id="closeAuthModal">
+                <button class="btn-close" id="closeAuthModal" aria-label="Fechar modal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -325,7 +325,7 @@
                     <button type="button" id="signupBtn" class="btn-primary">Criar Conta</button>
                 </form>
                 <div class="modal-footer">
-                    <p id="authErrorMessage" style="color: red;"></p>
+                    <p id="authErrorMessage" style="color: red;" aria-live="polite"></p>
                 </div>
             </div>
         </div>

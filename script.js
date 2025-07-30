@@ -16,6 +16,7 @@ class HabitsTracker {
         this.appWrapper = document.getElementById('appWrapper');
         this.authContainer = document.getElementById('authContainer');
         this.unsubscribeHabits = null; // Para desligar o listener do Firestore
+        this.trapFocusHandler = null; // Para o manipulador de foco do modal
         
         this.user = null; // Para armazenar os dados do usuário logado
         this.init();
@@ -928,13 +929,60 @@ class HabitsTracker {
     }
 
     openModal(modalId) {
-        document.getElementById(modalId).classList.add('active');
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        modal.classList.add('active');
         document.body.style.overflow = 'hidden';
+
+        // Salva o elemento que tinha foco antes de abrir o modal
+        this.lastFocusedElement = document.activeElement;
+
+        // Lógica para prender o foco dentro do modal
+        const focusableElements = modal.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstFocusableElement = focusableElements[0];
+        const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+        // Foca o primeiro elemento (geralmente o botão de fechar)
+        if (firstFocusableElement) {
+            firstFocusableElement.focus();
+        }
+
+        this.trapFocusHandler = (e) => {
+            let isTabPressed = e.key === 'Tab' || e.keyCode === 9;
+            if (!isTabPressed) return;
+
+            if (e.shiftKey) { // Shift + Tab
+                if (document.activeElement === firstFocusableElement) {
+                    lastFocusableElement.focus();
+                    e.preventDefault();
+                }
+            } else { // Tab
+                if (document.activeElement === lastFocusableElement) {
+                    firstFocusableElement.focus();
+                    e.preventDefault();
+                }
+            }
+        };
+
+        modal.addEventListener('keydown', this.trapFocusHandler);
     }
 
     closeModal(modalId) {
-        document.getElementById(modalId).classList.remove('active');
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        modal.classList.remove('active');
         document.body.style.overflow = 'auto';
+
+        // Remove o listener de foco e devolve o foco ao elemento original
+        modal.removeEventListener('keydown', this.trapFocusHandler);
+        if (this.lastFocusedElement) {
+            this.lastFocusedElement.focus();
+        }
+
         if (modalId === 'addHabitModal') {
             this.resetHabitModal();
         }
