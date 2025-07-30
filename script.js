@@ -17,6 +17,7 @@ class HabitsTracker {
         this.authContainer = document.getElementById('authContainer');
         this.unsubscribeHabits = null; // Para desligar o listener do Firestore
         
+        this.user = null; // Para armazenar os dados do usuário logado
         this.init();
     }
 
@@ -216,8 +217,25 @@ class HabitsTracker {
     // Load user data
     async loadUserData(user) {
         // Store user ID
-        this.userId = user.uid;
-    
+        this.userId = user.uid; // Mantém para compatibilidade, mas this.user é mais completo
+
+        // Busca os dados do documento do usuário no Firestore
+        const userDocRef = this.db.collection('users').doc(user.uid);
+        const userDoc = await userDocRef.get();
+
+        if (userDoc.exists) {
+            this.user = userDoc.data();
+        } else {
+            // Fallback caso o documento não exista (embora a lógica de criação deva prevenir isso)
+            this.user = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || 'Usuário'
+            };
+        }
+
+        this.renderWelcomeMessage();
+
         // Update habits collection to use user ID
         this.habitsCollection = this.db.collection('users').doc(user.uid).collection('habits');
         this.listenForHabitChanges(); // Re-attaches listener with new collection
@@ -565,6 +583,16 @@ class HabitsTracker {
     renderCurrentDate() {
         document.getElementById('currentDate').textContent = 
             this.formatDateDisplay(this.currentDate);
+    }
+
+    renderWelcomeMessage() {
+        const header = document.getElementById('dashboardHeader');
+        if (!header || !this.user) return;
+
+        const name = this.user.displayName.split(' ')[0]; // Pega o primeiro nome
+
+        header.querySelector('h2').textContent = `Olá, ${name}!`;
+        header.querySelector('p').textContent = 'Aqui estão seus hábitos de hoje.';
     }
 
     renderDashboard() {
